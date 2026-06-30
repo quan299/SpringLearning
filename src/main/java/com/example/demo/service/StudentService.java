@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.request.StudentCreationRequest;
+import com.example.demo.dto.response.StudentResponse;
 import com.example.demo.entity.Student;
 import com.example.demo.repository.StudentRepository;
 import org.springframework.stereotype.Service;
@@ -26,8 +28,22 @@ public class StudentService {
 
         return optionalStudent.get();
     }
-    public Student createStudent(Student student){
-        return studentRepository.save(student);
+    public StudentResponse createStudent(StudentCreationRequest request) {
+        Student student = new Student();
+
+        student.setName(request.getName());
+        student.setAge(request.getAge());
+        student.setEmail(request.getEmail());
+
+        studentRepository.save(student);
+        StudentResponse response = new StudentResponse();
+
+        response.setId(student.getId());
+        response.setName(student.getName());
+        response.setAge(student.getAge());
+        response.setEmail(student.getEmail());
+
+        return response;
     }
     public Student findStudentByName(String name){
         Student student = studentRepository.findStudentByName(name);

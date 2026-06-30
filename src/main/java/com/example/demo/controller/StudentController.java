@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.request.StudentCreationRequest;
+import com.example.demo.dto.response.StudentResponse;
 import com.example.demo.entity.Student;
 import com.example.demo.service.StudentService;
 import org.springframework.stereotype.Controller;
@@ -22,8 +24,8 @@ public class StudentController {
     }
 
     @PostMapping
-    public Student createStudent(@RequestBody Student student) {
-        return studentService.createStudent(student);
+    public StudentResponse createStudent(@RequestBody StudentCreationRequest request) {
+        return studentService.createStudent(request);
     }
 
     @GetMapping("/{id}")
