@@ -1,11 +1,13 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.request.StudentCreationRequest;
+import com.example.demo.dto.request.StudentUpdateRequest;
 import com.example.demo.dto.response.StudentResponse;
 import com.example.demo.entity.Student;
 import com.example.demo.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,21 +15,36 @@ import java.util.Optional;
 public class StudentService {
     private final StudentRepository studentRepository;
 
+    private StudentResponse toStudentResponse(Student student){
+        return new StudentResponse(
+                student.getId(),
+                student.getName(),
+                student.getAge(),
+                student.getEmail()
+        );
+    }
     public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
-    public List<Student> getAllStudents(){
-        return studentRepository.findAll();
-    }
-    public Student getStudentById(Long id){
-        Optional<Student> optionalStudent = studentRepository.findById(id);
+    public List<StudentResponse> getAllStudents() {
+        List<Student> students = studentRepository.findAll();
 
-        if (optionalStudent.isEmpty()) {
-            throw new RuntimeException("Student not found with this id " + id);
+        List<StudentResponse> responses = new ArrayList<>();
+
+        for (Student student : students) {
+            StudentResponse response = toStudentResponse(student);
+            responses.add(response);
         }
 
-        return optionalStudent.get();
+        return responses;
     }
+    public StudentResponse getStudentById(Long id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+
+        return toStudentResponse(student);
+    }
+
     public StudentResponse createStudent(StudentCreationRequest request) {
         Student student = new Student();
 
@@ -45,22 +62,29 @@ public class StudentService {
 
         return response;
     }
-    public Student findStudentByName(String name){
-        Student student = studentRepository.findStudentByName(name);
-        if(student == null){
-            throw new RuntimeException("student not found");
-        }
-        else return student;
-    }
-    public void deleteStudentById(Long id){
-        studentRepository.deleteById(id);
+    public StudentResponse findStudentByName(String name) {
+        Student student = studentRepository.findByName(name)
+                .orElseThrow(() -> new RuntimeException("Student not found with name: " + name));
 
+        return toStudentResponse(student);
     }
-    public Student updateStudentById(Long id, Student student){
-         Student student2 = studentRepository.getById(id);
-        student2.setName(student.getName());
-        student2.setAge(student.getAge());
-        student2.setEmail(student.getEmail());
-        return studentRepository.save(student2);
+    public StudentResponse updateStudentById(Long id, StudentUpdateRequest request) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+
+        student.setName(request.getName());
+        student.setAge(request.getAge());
+        student.setEmail(request.getEmail());
+
+        Student updatedStudent = studentRepository.save(student);
+
+        return toStudentResponse(updatedStudent);
+    }
+
+    public void deleteStudentById(Long id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+
+        studentRepository.delete(student);
     }
 }
