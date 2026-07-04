@@ -20,7 +20,7 @@ public class StudentController {
     }
 
     @GetMapping
-    public List<Student> getAllStudents() {
+    public List<StudentResponse> getAllStudents() {
         return studentService.getAllStudents();
     }
 
@@ -45,5 +45,9 @@ public class StudentController {
     @DeleteMapping("/{id}")
     public void deleteStudentById(@PathVariable Long id) {
         studentService.deleteStudentById(id);
+    }
+    @GetMapping("/search")
+    public StudentResponse findStudentByName(@RequestParam String name) {
+        return studentService.findStudentByName(name);
     }
 }
