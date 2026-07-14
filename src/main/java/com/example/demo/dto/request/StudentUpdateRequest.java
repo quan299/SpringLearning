@@ -1,16 +1,25 @@
 package com.example.demo.dto.request;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@FieldDefaults(level= AccessLevel.PRIVATE)
 public class StudentUpdateRequest {
-    private String name;
-    private Integer age;
-    private String email;
+    @NotBlank
+     String name;
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    @Min(18)
+    Integer age;
 
-    public Integer getAge() { return age; }
-    public void setAge(Integer age) { this.age = age; }
+    @Email
+     String email;
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+
 }

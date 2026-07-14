@@ -7,27 +7,28 @@ import com.example.demo.entity.Student;
 import com.example.demo.exception.AppException;
 import com.example.demo.exception.ErrorCode;
 import com.example.demo.repository.StudentRepository;
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 public class StudentService {
 
     private final StudentRepository studentRepository;
 
-    private StudentResponse toStudentResponse(Student student){
-        return new StudentResponse(
-                student.getId(),
-                student.getName(),
-                student.getAge(),
-                student.getEmail()
-        );
-    }
-    public StudentService(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
+    private StudentResponse toStudentResponse(Student student) {
+
+        return StudentResponse.builder()
+                .id(student.getId())
+                .name(student.getName())
+                .age(student.getAge())
+                .email(student.getEmail())
+                .build();
     }
     public List<StudentResponse> getAllStudents() {
         List<Student> students = studentRepository.findAll();
@@ -43,27 +44,22 @@ public class StudentService {
     }
     public StudentResponse getStudentById(Long id) {
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND);
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
 
         return toStudentResponse(student);
     }
 
     public StudentResponse createStudent(StudentCreationRequest request) {
-        Student student = new Student();
+        Student student = Student.builder()
+                .name(request.getName())
+                .age(request.getAge())
+                .email(request.getEmail())
+                .build();
 
-        student.setName(request.getName());
-        student.setAge(request.getAge());
-        student.setEmail(request.getEmail());
+        Student savedStudent =
+                studentRepository.save(student);
 
-        studentRepository.save(student);
-        StudentResponse response = new StudentResponse();
-
-        response.setId(student.getId());
-        response.setName(student.getName());
-        response.setAge(student.getAge());
-        response.setEmail(student.getEmail());
-
-        return response;
+        return toStudentResponse(savedStudent);
     }
     public StudentResponse findStudentByName(String name) {
         Student student = studentRepository.findByName(name)
@@ -82,6 +78,8 @@ public class StudentService {
         Student updatedStudent = studentRepository.save(student);
 
         return toStudentResponse(updatedStudent);
+
+
     }
 
     public void deleteStudentById(Long id) {

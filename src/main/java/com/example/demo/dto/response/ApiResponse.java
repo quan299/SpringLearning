@@ -1,41 +1,19 @@
 package com.example.demo.dto.response;
 
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level=AccessLevel.PRIVATE)
 public class ApiResponse<T> {
 
-    private int code;
-    private String message;
-    private T result;
+    String message;
+   T result;
+    int code;
 
-    public ApiResponse() {
-    }
 
-    public ApiResponse(int code, String message, T result) {
-        this.code = code;
-        this.message = message;
-        this.result = result;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public T getResult() {
-        return result;
-    }
-
-    public void setResult(T result) {
-        this.result = result;
-    }
 }
