@@ -4,6 +4,8 @@ import com.example.demo.dto.request.StudentCreationRequest;
 import com.example.demo.dto.request.StudentUpdateRequest;
 import com.example.demo.dto.response.StudentResponse;
 import com.example.demo.entity.Student;
+import com.example.demo.exception.AppException;
+import com.example.demo.exception.ErrorCode;
 import com.example.demo.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +43,7 @@ public class StudentService {
     }
     public StudentResponse getStudentById(Long id) {
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND);
 
         return toStudentResponse(student);
     }
@@ -65,13 +67,13 @@ public class StudentService {
     }
     public StudentResponse findStudentByName(String name) {
         Student student = studentRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Student not found with name: " + name));
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
 
         return toStudentResponse(student);
     }
     public StudentResponse updateStudentById(Long id, StudentUpdateRequest request) {
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
 
         student.setName(request.getName());
         student.setAge(request.getAge());
@@ -84,7 +86,7 @@ public class StudentService {
 
     public void deleteStudentById(Long id) {
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
 
         studentRepository.delete(student);
     }
