@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.Mapper.StudentMapper;
 import com.example.demo.dto.request.StudentCreationRequest;
 import com.example.demo.dto.request.StudentUpdateRequest;
 import com.example.demo.dto.response.StudentResponse;
@@ -9,6 +10,10 @@ import com.example.demo.exception.ErrorCode;
 import com.example.demo.repository.StudentRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,46 +25,64 @@ import java.util.Optional;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final StudentMapper StudentMapper;
 
     private StudentResponse toStudentResponse(Student student) {
-
-        return StudentResponse.builder()
-                .id(student.getId())
-                .name(student.getName())
-                .age(student.getAge())
-                .email(student.getEmail())
-                .build();
+        StudentResponse studentResponse = StudentMapper.toStudentResponse(student);
+        return studentResponse;
     }
-    public List<StudentResponse> getAllStudents() {
-        List<Student> students = studentRepository.findAll();
+    public Page<StudentResponse> getAllStudents(int page, int size,String sortBy,String direction) {
+        Sort sort;
 
-        List<StudentResponse> responses = new ArrayList<>();
-
-        for (Student student : students) {
-            StudentResponse response = toStudentResponse(student);
-            responses.add(response);
+        if (direction.equalsIgnoreCase("desc")) {
+            sort = Sort.by(sortBy).descending();
+        } else {
+            sort = Sort.by(sortBy).ascending();
         }
+        Pageable pageable = PageRequest.of(page, size,sort);
 
-        return responses;
+        Page<Student> studentPage =
+                studentRepository.findAll(pageable);
+
+        return studentPage
+                .map(StudentMapper::toStudentResponse);
+    }
+    public Page<StudentResponse> searchStudents(
+            String keyword,
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable =
+                PageRequest.of(page, size, sort);
+
+        return studentRepository
+                .findByNameContainingIgnoreCase(
+                        keyword,
+                        pageable
+                )
+                .map(StudentMapper::toStudentResponse);
     }
     public StudentResponse getStudentById(Long id) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
 
-        return toStudentResponse(student);
+        return StudentMapper.toStudentResponse(student);
     }
 
     public StudentResponse createStudent(StudentCreationRequest request) {
-        Student student = Student.builder()
-                .name(request.getName())
-                .age(request.getAge())
-                .email(request.getEmail())
-                .build();
+        Student student = StudentMapper.toStudent(request);
 
         Student savedStudent =
                 studentRepository.save(student);
 
-        return toStudentResponse(savedStudent);
+        return StudentMapper.toStudentResponse(savedStudent);
     }
     public StudentResponse findStudentByName(String name) {
         Student student = studentRepository.findByName(name)
@@ -71,9 +94,7 @@ public class StudentService {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
 
-        student.setName(request.getName());
-        student.setAge(request.getAge());
-        student.setEmail(request.getEmail());
+       StudentMapper.updateStudent(student, request);
 
         Student updatedStudent = studentRepository.save(student);
 

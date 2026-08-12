@@ -25,4 +25,7 @@ public class Student {
 
     @Column(unique = true)
     String email;
+    @ManyToOne
+    @JoinColumn(name = "classroom_id")
+    private Classroom classroom;
 }

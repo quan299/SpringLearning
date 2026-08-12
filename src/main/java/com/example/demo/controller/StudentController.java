@@ -1,32 +1,49 @@
 package com.example.demo.controller;
 
+import com.example.demo.Mapper.PageMapper;
 import com.example.demo.dto.request.StudentCreationRequest;
 import com.example.demo.dto.request.StudentUpdateRequest;
 import com.example.demo.dto.response.ApiResponse;
+import com.example.demo.dto.response.PageResponse;
 import com.example.demo.dto.response.StudentResponse;
-import com.example.demo.entity.Student;
 import com.example.demo.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/students")
 public class StudentController {
     private final StudentService studentService;
-
-
+    private final PageMapper pageMapper;
 
     @GetMapping
-    public ApiResponse<List<StudentResponse>> getAllStudents() {
+    public ApiResponse<PageResponse<StudentResponse>> getAllStudents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+
+        Page<StudentResponse> studentPage =
+                studentService.getAllStudents(
+                        page,
+                        size,
+                        sortBy,
+                        direction
+                );
+
+        PageResponse<StudentResponse> pageResponse =
+                pageMapper.toPageResponse(studentPage);
+
         return new ApiResponse<>(
                 1000,
                 "Success",
-                studentService.getAllStudents()
+                pageResponse
         );
     }
 
@@ -45,6 +62,28 @@ public class StudentController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @GetMapping("/search")
+    public ApiResponse<PageResponse<StudentResponse>> searchStudents(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+       Page<StudentResponse> studentPage = studentService.searchStudents(  keyword,
+               page,
+               size,
+               sortBy,
+               direction);
+        PageResponse<StudentResponse> pageResponse =
+                pageMapper.toPageResponse(studentPage);
+        return new ApiResponse<>(
+                1000,
+                "Success",
+              pageResponse
+        );
     }
 
     @GetMapping("/{id}")
@@ -83,12 +122,5 @@ public class StudentController {
                 .body(response);
     }
 
-    @GetMapping("/search")
-    public ApiResponse<StudentResponse> findStudentByName(@RequestParam String name) {
-        return new ApiResponse<>(
-                1000,
-                "Success",
-                studentService.findStudentByName(name)
-        );
-    }
+
 }
